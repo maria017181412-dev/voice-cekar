@@ -1,0 +1,5 @@
+This is a placeholder script. Replace this entire file with the actual narration text you want to test.
+
+Keep sentences reasonably normal-length. Numbers, dates, and currency are not specially normalized yet in this spike-test project, so avoid heavy use of symbols like $ or % if you want a clean first test — plain sentences work best for the first run.
+
+You can paste a short two-hundred word script to test normal generation, or a much longer script to test the parallel sharding and long-form reliability.
