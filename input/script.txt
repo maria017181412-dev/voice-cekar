@@ -1,5 +1,9 @@
-This is a placeholder script. Replace this entire file with the actual narration text you want to test.
+The old lighthouse keeper climbed the spiral stairs every evening, just as the sky turned the color of dusty rose. He had done this for so many years that his feet knew each worn stone step without needing his eyes to guide them.
 
-Keep sentences reasonably normal-length. Numbers, dates, and currency are not specially normalized yet in this spike-test project, so avoid heavy use of symbols like $ or % if you want a clean first test — plain sentences work best for the first run.
+At the top, the great lamp waited in silence, its glass panels catching the last light of the day. He would polish the brass frame slowly, humming an old tune his mother once sang to him, a melody he could no longer remember the words to.
 
-You can paste a short two-hundred word script to test normal generation, or a much longer script to test the parallel sharding and long-form reliability.
+Below, the sea moved like a sleeping animal, rising and falling in slow, patient breaths. Fishing boats drifted home in single file, their lanterns blinking like tired fireflies against the darkening water.
+
+When the light finally turned, sweeping its steady beam across the waves, the keeper would sit by the window with a cup of tea, watching the horizon fade into deep blue. There was nothing urgent about this hour. It belonged only to him, and to the quiet turning of the world outside.
+
+He often thought that some jobs were not really about the work at all, but about the stillness they gave you, a small, steady pocket of peace at the end of a long and ordinary day.
