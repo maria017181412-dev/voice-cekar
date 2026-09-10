@@ -1,16 +1,58 @@
-name: "01 - Benchmark (single test, real CPU speed)"
+name: "02 - Generate voice-over (parallel CPU shards)"
 
-# এই workflow-টা শুধু একটা বাক্য generate করে সময় মাপে।
-# আগে এটা চালাও, তারপর 02-generate-parallel.yml চালানোর আগে
-# ফলাফল দেখে shard সংখ্যা ঠিক করো।
+# input/script.txt-কে ছোট chunk-এ ভাগ করে, N-টা shard job-এ সমান্তরালে
+# (GitHub Actions matrix) generate করে, শেষে জোড়া লাগিয়ে output/final.wav বানায়।
+# সবটাই GitHub-hosted ফ্রি runner-এ, কোনো GPU/self-hosted মেশিন ছাড়া।
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      shard_count:
+        description: "কতগুলো parallel CPU job ব্যবহার করবে (ছোট script-এ কম রাখো, যেমন ৩-৫; লম্বা script-এ ১০-২০)"
+        required: true
+        default: "5"
 
 jobs:
-  benchmark:
+  prepare:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 15
+    outputs:
+      shard_list: ${{ steps.make_shards.outputs.shard_list }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Chunk the script
+        run: python scripts/chunk_text.py
+
+      - name: Upload chunks (text only, small)
+        uses: actions/upload-artifact@v4
+        with:
+          name: chunks
+          path: chunks/
+
+      - name: Build shard index list
+        id: make_shards
+        run: |
+          python -c "
+          import json
+          n = int('${{ github.event.inputs.shard_count }}')
+          print('shard_list=' + json.dumps(list(range(n))))
+          " >> "$GITHUB_OUTPUT"
+
+  generate:
+    needs: prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false   # একটা shard fail করলে বাকি shard গুলো থামবে না
+      matrix:
+        shard: ${{ fromJson(needs.prepare.outputs.shard_list) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -31,22 +73,73 @@ jobs:
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
-      - name: Install CPU-only torch (ছোট, দ্রুত install — CUDA wheel এখানে দরকার নেই)
+      - name: Install CPU-only torch
         run: pip install torch torchaudio torchcodec --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install f5-tts
         run: pip install f5-tts soundfile
 
+      - name: Download chunks
+        uses: actions/download-artifact@v4
+        with:
+          name: chunks
+          path: chunks/
+
       - name: Prepare reference audio (auto-convert phone recording to wav)
         run: python scripts/prepare_reference.py
 
-      - name: Run benchmark
-        run: python scripts/benchmark.py
+      - name: Generate this shard's chunks
+        run: python scripts/generate_chunk.py ${{ matrix.shard }} ${{ github.event.inputs.shard_count }}
 
-      - name: Upload result
+      - name: Upload this shard's audio
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: benchmark-result
-          path: output/benchmark/
+          name: audio-shard-${{ matrix.shard }}
+          path: output/chunks/
+          if-no-files-found: warn
+
+  stitch:
+    needs: generate
+    if: always()   # কিছু shard fail করলেও, যা তৈরি হয়েছে তা দিয়ে stitch করে রিপোর্ট দেখাও
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install ffmpeg + soundfile
+        run: |
+          sudo apt-get update && sudo apt-get install -y ffmpeg
+          pip install soundfile
+
+      - name: Download chunk manifest
+        uses: actions/download-artifact@v4
+        with:
+          name: chunks
+          path: chunks/
+
+      - name: Download all shard audio (merged into one folder)
+        uses: actions/download-artifact@v4
+        with:
+          pattern: audio-shard-*
+          path: output/chunks/
+          merge-multiple: true
+
+      - name: Stitch final audio
+        run: python scripts/stitch_audio.py
+
+      - name: Upload final voice-over
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-voice-over
+          path: |
+            output/final.wav
+            output/generation_report.json
           if-no-files-found: warn
