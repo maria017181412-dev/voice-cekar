@@ -85,6 +85,9 @@ jobs:
           name: chunks
           path: chunks/
 
+      - name: Prepare reference audio (auto-convert phone recording to wav)
+        run: python scripts/prepare_reference.py
+
       - name: Generate this shard's chunks
         run: python scripts/generate_chunk.py ${{ matrix.shard }} ${{ github.event.inputs.shard_count }}
 
