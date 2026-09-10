@@ -32,7 +32,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
 
       - name: Install CPU-only torch (ছোট, দ্রুত install — CUDA wheel এখানে দরকার নেই)
-        run: pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+        run: pip install torch torchaudio torchcodec --index-url https://download.pytorch.org/whl/cpu
 
       - name: Install f5-tts
         run: pip install f5-tts soundfile
