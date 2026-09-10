@@ -14,23 +14,31 @@
 | জিনিস | কোথায় | নোট |
 |---|---|---|
 | **Voice-over-এর টেক্সট** | `input/script.txt` | placeholder টেক্সট মুছে নিজের script paste করো |
-| **Reference voice (যে কণ্ঠে বানাতে চাও)** | `voices/narrator/reference.wav` | ৫-১৫ সেকেন্ড, পরিষ্কার, single-speaker |
-| **Reference voice-এর transcript** | `voices/narrator/reference.txt` | reference.wav-এ ঠিক কী বলা হয়েছে, হুবহু লেখা |
+| **Reference voice (যে কণ্ঠে বানাতে চাও)** | `voices/narrator/reference.<যেকোনো ফরম্যাট>` | phone-এ যেভাবেই record করেছো (m4a/mp3/যা-ই হোক), নাম "reference" দিয়ে শুরু হলেই হবে — workflow নিজেই wav-এ convert করে নেয় |
+| **Reference voice-এর transcript** | `voices/narrator/reference.txt` | নিচের ভাষা/sentence অংশ দেখো |
 | **চূড়ান্ত audio (output)** | GitHub-এর **Actions run → Artifacts** section-এ | নিচে ধাপ ৪ দেখো, ডাউনলোড লিংক ওখানেই পাবে |
 
 `voices/narrator/PLACEHOLDER_README.txt` ফাইলে বিস্তারিত লেখা আছে reference audio নিয়ে।
+
+### Reference voice — কোন ভাষায়, আর কী বলবে
+
+**ইংরেজিতে record করো, বাংলায় না।** তোমার আসল yt-core প্রজেক্ট ইংরেজি ভাষায় narration বানায় (config-এ `"language": "en"`), আর F5-TTS-এর base model মূলত ইংরেজি/চীনা ভাষার উপর train করা — reference voice টার্গেট ভাষার সাথে না মিললে pronunciation/accent অস্বাভাবিক শোনাতে পারে।
+
+Phone-এর Voice Recorder/Voice Memos app খুলে, স্বাভাবিক, শান্ত গলায় (narration-এর মতো টোন) নিচের বাক্যটা জোরে পড়ো, ~৮-১২ সেকেন্ড লাগবে:
+
+> "This is a short voice sample. I'm recording it so the system can learn the natural tone and pace of my narration voice, calm and steady, just like a story being told at night."
+
+এই একই বাক্যটা হুবহু কপি করে `voices/narrator/reference.txt`-এ বসিয়ে দাও — নিজে কান দিয়ে শুনে transcribe করার দরকার নেই।
 
 ---
 
 ## ২. GitHub-এ কীভাবে বসাবে (নতুন account-এ)
 
-1. নতুন account-এ একটা **public** repo বানাও (নাম যা খুশি, যেমন `f5tts-spike-test`)। Public হওয়া জরুরি — তাহলেই Actions minutes সম্পূর্ণ ফ্রি।
-2. এই zip-এর ভেতরের সবকিছু (এই README সহ) সেই repo-তে push করো।
-3. `voices/narrator/reference.wav` আর `reference.txt` যোগ করো (নিজের হাতে, উপরের table অনুযায়ী)।
-4. `input/script.txt`-এ নিজের টেস্ট script paste করো।
-5. Push করো।
-
-Repo-র settings-এ আলাদা করে কিছু on/off করার দরকার নেই — Actions default-ই enabled থাকে নতুন repo-তে।
+1. নতুন account-এ একটা **public** repo বানাও। Public হওয়া জরুরি — তাহলেই Actions minutes সম্পূর্ণ ফ্রি।
+2. Settings → Actions → General → "Workflow permissions" → **"Read and write permissions"** বেছে Save করো।
+3. **Add file → Create new file** দিয়ে শুধু একটা ফাইল বানাও: path `.github/workflows/00-unpack-zip.yml`, ভেতরে এই zip-এর সেই ফাইলের content বসাও, Commit করো।
+4. **Add file → Upload files** দিয়ে পুরো zip-টা repo-র root-এ upload করে Commit করো — এই push-ই বাকি সব ফাইল (workflows, scripts, README) automatically extract করে repo-তে বসিয়ে দেবে।
+5. `voices/narrator/` ফোল্ডারে তোমার reference recording + `reference.txt` যোগ করো (উপরের অংশ দেখো), আর `input/script.txt`-এ নিজের test script বসাও, তারপর commit/push করো।
 
 ---
 
