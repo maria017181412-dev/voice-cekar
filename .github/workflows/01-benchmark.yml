@@ -37,6 +37,9 @@ jobs:
       - name: Install f5-tts
         run: pip install f5-tts soundfile
 
+      - name: Prepare reference audio (auto-convert phone recording to wav)
+        run: python scripts/prepare_reference.py
+
       - name: Run benchmark
         run: python scripts/benchmark.py
 
