@@ -1,0 +1,6 @@
+output/
+chunks/
+__pycache__/
+*.pyc
+.venv/
+venv/
