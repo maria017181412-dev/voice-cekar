@@ -1,0 +1,49 @@
+name: "01 - Benchmark (single test, real CPU speed)"
+
+# এই workflow-টা শুধু একটা বাক্য generate করে সময় মাপে।
+# আগে এটা চালাও, তারপর 02-generate-parallel.yml চালানোর আগে
+# ফলাফল দেখে shard সংখ্যা ঠিক করো।
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Cache pip + huggingface model weights
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/huggingface
+          key: f5tts-cache-${{ runner.os }}-v1
+
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
+
+      - name: Install CPU-only torch (ছোট, দ্রুত install — CUDA wheel এখানে দরকার নেই)
+        run: pip install torch torchaudio --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install f5-tts
+        run: pip install f5-tts soundfile
+
+      - name: Run benchmark
+        run: python scripts/benchmark.py
+
+      - name: Upload result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-result
+          path: output/benchmark/
+          if-no-files-found: warn
