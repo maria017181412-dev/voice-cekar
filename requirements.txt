@@ -1,0 +1,5 @@
+# torch/torchaudio ইচ্ছাকৃতভাবে এখানে নেই — workflow file-এ CPU-specific index দিয়ে
+# আলাদাভাবে install করা হয় (--index-url https://download.pytorch.org/whl/cpu),
+# কারণ এটা default pip install-এর চেয়ে অনেক ছোট ও দ্রুত।
+f5-tts
+soundfile
